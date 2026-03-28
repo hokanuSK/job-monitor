@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Job Monitor</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #18202a;
+      --muted: #5f6b7a;
+      --accent: #1462ff;
+      --border: #d9e1ef;
+      --ok: #0f9d58;
+    }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(160deg, #eef2ff 0%, #f7fafc 60%, #eef7f2 100%);
+      color: var(--text);
+    }
+    .wrap {
+      max-width: 1200px;
+      margin: 24px auto;
+      padding: 0 16px 24px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      box-shadow: 0 2px 10px rgba(22, 31, 49, 0.05);
+    }
+    h1 {
+      margin: 0 0 12px;
+      font-size: 28px;
+      letter-spacing: 0.4px;
+    }
+    h2 {
+      margin: 0 0 10px;
+      font-size: 18px;
+    }
+    .small {
+      font-size: 13px;
+      color: var(--muted);
+      margin: 0 0 8px;
+    }
+    form {
+      margin: 0;
+    }
+    textarea,
+    input[type="text"],
+    input[type="email"],
+    input[type="number"] {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 14px;
+      background: #fbfdff;
+    }
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+      font-family: inherit;
+    }
+    .actions {
+      margin-top: 10px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    button {
+      border: none;
+      border-radius: 8px;
+      background: var(--accent);
+      color: #fff;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .ghost {
+      background: #e6eeff;
+      color: #103a8d;
+      text-decoration: none;
+      display: inline-block;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-weight: 600;
+    }
+    .metric-label {
+      margin: 0;
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .metric-value {
+      margin: 2px 0 0;
+      font-size: 24px;
+      font-weight: 700;
+    }
+    .flash {
+      border-left: 4px solid var(--ok);
+      background: #effaf3;
+      color: #155c36;
+      padding: 10px 12px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #fff;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 900px;
+    }
+    th,
+    td {
+      text-align: left;
+      padding: 8px 10px;
+      border-bottom: 1px solid #ecf0f7;
+      font-size: 13px;
+      vertical-align: top;
+    }
+    th {
+      background: #f8fbff;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+    tr:nth-child(even) td {
+      background: #fcfdff;
+    }
+    a {
+      color: #0c53d0;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Job Monitor</h1>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for message in messages %}
+          <div class="flash">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <div class="grid">
+      <div class="card">
+        <h2>Send Notifications</h2>
+        <p class="small">Send notifications for the currently applied filters.</p>
+        <p class="small">Only jobs matching current filters and not older than selected age will be sent.</p>
+        <form method="post" action="{{ url_for('send_mails') }}">
+          <input type="email" name="recipient_email" value="{{ recipient_email }}" placeholder="name@example.com">
+          <p class="small" style="margin-top:8px;">Max posted age in hours</p>
+          <input type="number" step="1" min="1" name="notification_max_age_hours" value="{{ notification_max_age_hours }}" placeholder="24" style="margin-top:8px;">
+          <p class="small" style="margin-top:10px;">SMTP host</p>
+          <input type="text" name="smtp_host" value="{{ smtp_host }}" placeholder="smtp.gmail.com">
+          <p class="small" style="margin-top:8px;">SMTP port</p>
+          <input type="number" step="1" min="1" name="smtp_port" value="{{ smtp_port }}" placeholder="587">
+          <p class="small" style="margin-top:8px;">SMTP user</p>
+          <input type="text" name="smtp_user" value="{{ smtp_user }}" placeholder="you@gmail.com">
+          <p class="small" style="margin-top:8px;">SMTP app password</p>
+          <input type="password" name="smtp_password" placeholder="Leave blank to keep saved password">
+          <p class="small" style="margin-top:8px;">SMTP from address</p>
+          <input type="email" name="smtp_from" value="{{ smtp_from }}" placeholder="you@gmail.com">
+          <p class="small" style="margin-top:8px;">SMTP timeout (seconds)</p>
+          <input type="number" step="1" min="1" name="smtp_timeout" value="{{ smtp_timeout }}" placeholder="30">
+          <div class="actions" style="margin-top:8px;">
+            <label style="display:flex;gap:8px;align-items:center;font-size:14px;">
+              <input type="checkbox" name="smtp_starttls" value="1" {% if smtp_starttls %}checked{% endif %}>
+              STARTTLS
+            </label>
+            <label style="display:flex;gap:8px;align-items:center;font-size:14px;">
+              <input type="checkbox" name="smtp_ssl" value="1" {% if smtp_ssl %}checked{% endif %}>
+              SSL
+            </label>
+          </div>
+          <p class="small" style="margin-top:8px;">Gmail preset: host smtp.gmail.com, port 587, STARTTLS on, SSL off.</p>
+          <input type="hidden" name="search" value="{{ search }}">
+          <input type="hidden" name="title" value="{{ title }}">
+          <input type="hidden" name="company" value="{{ company }}">
+          <input type="hidden" name="location" value="{{ location }}">
+          <input type="hidden" name="date_posted" value="{{ date_posted }}">
+          <input type="hidden" name="salary_min" value="{{ salary_min }}">
+          <input type="hidden" name="salary_max" value="{{ salary_max }}">
+          <input type="hidden" name="section_education" value="{{ section_education }}">
+          <input type="hidden" name="section_education_field" value="{{ section_education_field }}">
+          <input type="hidden" name="section_languages" value="{{ section_languages }}">
+          <input type="hidden" name="section_other_knowledge" value="{{ section_other_knowledge }}">
+          <input type="hidden" name="section_practice_area" value="{{ section_practice_area }}">
+          <input type="hidden" name="section_years_experience" value="{{ section_years_experience }}">
+          <input type="hidden" name="section_personal_skills" value="{{ section_personal_skills }}">
+          <input type="hidden" name="section_job_tasks" value="{{ section_job_tasks }}">
+          <input type="hidden" name="limit" value="{{ limit }}">
+          {% if remote_only %}
+            <input type="hidden" name="remote_only" value="1">
+          {% endif %}
+          <div class="actions">
+            <button type="submit">Send mails for applied filter</button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <p class="metric-label">Filtered Jobs</p>
+        <p class="metric-value">{{ total_jobs }}</p>
+      </div>
+      <div class="card">
+        <p class="metric-label">Filtered Unique Companies</p>
+        <p class="metric-value">{{ unique_companies }}</p>
+      </div>
+      <div class="card">
+        <p class="metric-label">Filtered Jobs In Last Hour</p>
+        <p class="metric-value">{{ filtered_jobs_last_hour }}</p>
+      </div>
+      <div class="card">
+        <p class="metric-label">All Jobs</p>
+        <p class="metric-value">{{ all_jobs_count }}</p>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom: 12px;">
+      <h2>Advanced Filter</h2>
+      <form method="post" action="{{ url_for('apply_filters') }}">
+        <div class="grid">
+          <div>
+            <p class="small">Global search (title, company, location, posted, salary, description)</p>
+            <input type="text" name="search" value="{{ search }}" placeholder="python, analyst, remote...">
+          </div>
+          <div>
+            <p class="small">Title contains</p>
+            <input type="text" name="title" value="{{ title }}" placeholder="Leave empty = any title">
+          </div>
+          <div>
+            <p class="small">Company contains</p>
+            <input type="text" name="company" value="{{ company }}" placeholder="Leave empty = any company">
+          </div>
+          <div>
+            <p class="small">Location contains</p>
+            <input type="text" name="location" value="{{ location }}" placeholder="Leave empty = any location">
+          </div>
+          <div>
+            <p class="small">Posted text contains</p>
+            <input type="text" name="date_posted" value="{{ date_posted }}" placeholder="Leave empty = any posted date">
+          </div>
+          <div>
+            <p class="small">Salary min (numeric)</p>
+            <input type="number" step="1" name="salary_min" value="{{ salary_min }}" placeholder="0 = no minimum">
+          </div>
+          <div>
+            <p class="small">Salary max (numeric)</p>
+            <input type="number" step="1" name="salary_max" value="{{ salary_max }}" placeholder="0 = no maximum">
+          </div>
+          <div>
+            <p class="small">Rows to display (1-1000)</p>
+            <input type="number" name="limit" value="{{ limit }}" min="1" max="1000">
+          </div>
+          <div>
+            <p class="small">V popise ponuky: Pozícii vyhovujú uchádzači so vzdelaním</p>
+            <input type="text" name="section_education" value="{{ section_education }}" placeholder="vysokoškolské II. stupňa">
+          </div>
+          <div>
+            <p class="small">V popise ponuky: Vzdelanie v odbore</p>
+            <input type="text" name="section_education_field" value="{{ section_education_field }}" placeholder="IT">
+          </div>
+          <div>
+            <p class="small">V popise ponuky: Jazykové znalosti</p>
+            <input type="text" name="section_languages" value="{{ section_languages }}" placeholder="anglický, b1, c1">
+          </div>
+          <div>
+            <p class="small">V popise ponuky: Ostatné znalosti</p>
+            <input type="text" name="section_other_knowledge" value="{{ section_other_knowledge }}" placeholder="aws, gcp, terraform, python">
+          </div>
+          <div>
+            <p class="small">V popise ponuky: Prax na pozícii/v oblasti</p>
+            <input type="text" name="section_practice_area" value="{{ section_practice_area }}" placeholder="devops, sysadmin">
+          </div>
+          <div>
+            <p class="small">V popise ponuky: Počet rokov praxe</p>
+            <input type="text" name="section_years_experience" value="{{ section_years_experience }}" placeholder="2">
+          </div>
+          <div>
+            <p class="small">V popise ponuky: Osobnostné predpoklady a zručnosti</p>
+            <input type="text" name="section_personal_skills" value="{{ section_personal_skills }}" placeholder="proaktivita, tímový duch">
+          </div>
+          <div>
+            <p class="small">V popise ponuky: Čo budeš robiť</p>
+            <input type="text" name="section_job_tasks" value="{{ section_job_tasks }}" placeholder="kubernetes, ci/cd, linux">
+          </div>
+          <div style="display:flex;align-items:flex-end;">
+            <label style="display:flex;gap:8px;align-items:center;font-size:14px;">
+              <input type="checkbox" name="remote_only" value="1" {% if remote_only %}checked{% endif %}>
+              Remote/Home office only
+            </label>
+          </div>
+        </div>
+        <div class="actions">
+          <button type="submit">Apply</button>
+          <a class="ghost" href="{{ url_for('index') }}">Reset</a>
+        </div>
+      </form>
+    </div>
+
+    <div class="table-wrap">
+      <p class="small" style="padding: 10px 12px 0; margin: 0;">Showing up to {{ limit }} rows from filtered database results.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Title</th>
+            <th>Company</th>
+            <th>Location</th>
+            <th>Posted</th>
+            <th>Salary</th>
+            <th>Link</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for job in jobs %}
+            <tr>
+              <td>{{ job.index }}</td>
+              <td>{{ job.title }}</td>
+              <td>{{ job.company }}</td>
+              <td>{{ job.location }}</td>
+              <td>{{ job.date_posted }}</td>
+              <td>{{ job.salary }}</td>
+              <td><a href="{{ job.url }}" target="_blank" rel="noopener noreferrer">open</a></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>

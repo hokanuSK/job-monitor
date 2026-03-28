@@ -1,0 +1,12 @@
+{
+  "recipient_email": "lukas.adamik1@gmail.com",
+  "notification_max_age_hours": "12",
+  "smtp_host": "smtp.gmail.com",
+  "smtp_port": "587",
+  "smtp_user": "lukas.adamik1@gmail.com",
+  "smtp_password": "goct ycok xbrq fbyk",
+  "smtp_from": "JobMonitor@ahojky.ff",
+  "smtp_starttls": "1",
+  "smtp_ssl": "0",
+  "smtp_timeout": "30"
+}
