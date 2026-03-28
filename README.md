@@ -26,7 +26,7 @@ and can send email notifications for jobs matching your currently applied filter
 - `web_app.py`: Flask web app, updater thread, filters, SMTP notifications.
 - `mysql_store.py`: DB schema management, upsert/load logic, salary parsing.
 - `templates/index.html`: Job Monitor UI.
-- `main.py`: Scrapy spider for CSV/XLSX export and detail description extraction.
+- `src/job_monitor.py`: Scrapy spider for CSV/XLSX export and detail description extraction.
 - `docker-compose.yml`: Optional local MySQL service.
 
 ## Quick Start
@@ -78,7 +78,7 @@ Notification defaults:
 ## Optional: Run Scrapy Export
 
 ```bash
-scrapy runspider main.py
+scrapy runspider src/job_monitor.py
 ```
 
 This creates:
