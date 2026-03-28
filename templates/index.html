@@ -31,6 +31,30 @@
       gap: 12px;
       margin-bottom: 12px;
     }
+    .filter-grid {
+      align-items: start;
+    }
+    .form-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .form-field .small {
+      margin: 0;
+      line-height: 1.25;
+      min-height: 2.6em;
+      display: flex;
+      align-items: flex-end;
+    }
+    .form-field-inline {
+      justify-content: flex-end;
+    }
+    .form-field-inline label {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      font-size: 14px;
+    }
     .card {
       background: var(--card);
       border: 1px solid var(--border);
@@ -109,6 +133,34 @@
     h2 {
       margin: 0 0 10px;
       font-size: 18px;
+    }
+    .dropdown-panel {
+      margin: 0;
+    }
+    .dropdown-panel > summary {
+      list-style: none;
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .dropdown-panel > summary::-webkit-details-marker {
+      display: none;
+    }
+    .dropdown-panel > summary::after {
+      content: "▾";
+      margin-left: auto;
+      font-size: 14px;
+      color: var(--muted);
+      transition: transform 0.2s ease;
+    }
+    .dropdown-panel[open] > summary::after {
+      transform: rotate(180deg);
+    }
+    .dropdown-content {
+      margin-top: 10px;
     }
     .small {
       font-size: 13px;
@@ -210,6 +262,29 @@
     a {
       color: #0c53d0;
     }
+    @media (min-width: 1200px) {
+      .filter-grid {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+      }
+    }
+    @media (max-width: 1199px) {
+      .filter-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+    @media (max-width: 860px) {
+      .filter-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+    @media (max-width: 560px) {
+      .filter-grid {
+        grid-template-columns: 1fr;
+      }
+      .form-field .small {
+        min-height: 0;
+      }
+    }
   </style>
 </head>
 <body>
@@ -222,7 +297,7 @@
         <span class="fancy-line"><span class="lead-word">A</span> kto sa pritom neusmeje,</span>
         <span class="fancy-line">tomu vari niečo zle je?</span>
         <span class="fancy-line"><span class="lead-word">Pre</span> iných za lásku, pre Andyho za facku!</span>
-        <span class="fancy-line fancy-line-one-row"><span class="lead-word">Kto</span> sa hanbí, ten má prázdne gamby!</span>
+        <span class="fancy-line fancy-line-one-row"><span class="lead-word">A</span> kto sa andí, ten má prázdne gamby!</span>
       </p>
     </div>
 
@@ -254,97 +329,132 @@
     </div>
 
     <div class="card" style="margin-bottom: 12px;">
-      <h2>Advanced Filter</h2>
-      <form method="post" action="{{ url_for('apply_filters') }}">
-        <div class="grid">
-          <div>
-            <p class="small">Global search (title, company, location, posted, salary, description)</p>
-            <input type="text" name="search" value="{{ search }}" placeholder="python, analyst, remote...">
-          </div>
-          <div>
-            <p class="small">Title contains</p>
-            <input type="text" name="title" value="{{ title }}" placeholder="Leave empty = any title">
-          </div>
-          <div>
-            <p class="small">Company contains</p>
-            <input type="text" name="company" value="{{ company }}" placeholder="Leave empty = any company">
-          </div>
-          <div>
-            <p class="small">Location contains</p>
-            <input type="text" name="location" value="{{ location }}" placeholder="Leave empty = any location">
-          </div>
-          <div>
-            <p class="small">Posted text contains</p>
-            <input type="text" name="date_posted" value="{{ date_posted }}" placeholder="Leave empty = any posted date">
-          </div>
-          <div>
-            <p class="small">Salary min (numeric)</p>
-            <input type="number" step="1" name="salary_min" value="{{ salary_min }}" placeholder="0 = no minimum">
-          </div>
-          <div>
-            <p class="small">Salary max (numeric)</p>
-            <input type="number" step="1" name="salary_max" value="{{ salary_max }}" placeholder="0 = no maximum">
-          </div>
-          <div>
-            <p class="small">Rows to display (1-1000)</p>
-            <input type="number" name="limit" value="{{ limit }}" min="1" max="1000">
-          </div>
-          <div>
-            <p class="small">V popise ponuky: Pozícii vyhovujú uchádzači so vzdelaním</p>
-            <input type="text" name="section_education" value="{{ section_education }}" placeholder="vysokoškolské II. stupňa">
-          </div>
-          <div>
-            <p class="small">V popise ponuky: Vzdelanie v odbore</p>
-            <input type="text" name="section_education_field" value="{{ section_education_field }}" placeholder="IT">
-          </div>
-          <div>
-            <p class="small">V popise ponuky: Jazykové znalosti</p>
-            <input type="text" name="section_languages" value="{{ section_languages }}" placeholder="anglický, b1, c1">
-          </div>
-          <div>
-            <p class="small">V popise ponuky: Ostatné znalosti</p>
-            <input type="text" name="section_other_knowledge" value="{{ section_other_knowledge }}" placeholder="aws, gcp, terraform, python">
-          </div>
-          <div>
-            <p class="small">V popise ponuky: Prax na pozícii/v oblasti</p>
-            <input type="text" name="section_practice_area" value="{{ section_practice_area }}" placeholder="devops, sysadmin">
-          </div>
-          <div>
-            <p class="small">V popise ponuky: Počet rokov praxe</p>
-            <input type="text" name="section_years_experience" value="{{ section_years_experience }}" placeholder="2">
-          </div>
-          <div>
-            <p class="small">V popise ponuky: Osobnostné predpoklady a zručnosti</p>
-            <input type="text" name="section_personal_skills" value="{{ section_personal_skills }}" placeholder="proaktivita, tímový duch">
-          </div>
-          <div>
-            <p class="small">V popise ponuky: Čo budeš robiť</p>
-            <input type="text" name="section_job_tasks" value="{{ section_job_tasks }}" placeholder="kubernetes, ci/cd, linux">
-          </div>
-          <div style="display:flex;align-items:flex-end;">
-            <label style="display:flex;gap:8px;align-items:center;font-size:14px;">
-              <input type="checkbox" name="remote_only" value="1" {% if remote_only %}checked{% endif %}>
-              Remote/Home office only
-            </label>
-          </div>
+      <details class="dropdown-panel">
+        <summary>Advanced Filter</summary>
+        <div class="dropdown-content">
+          <form method="post" action="{{ url_for('apply_filters') }}">
+            <div class="grid filter-grid">
+              <div class="form-field">
+                <p class="small">Global search (title, company, location, posted, salary, description)</p>
+                <input type="text" name="search" value="{{ search }}" placeholder="python, analyst, remote...">
+              </div>
+              <div class="form-field">
+                <p class="small">Title contains</p>
+                <input type="text" name="title" value="{{ title }}" placeholder="Leave empty = any title">
+              </div>
+              <div class="form-field">
+                <p class="small">Company contains</p>
+                <input type="text" name="company" value="{{ company }}" placeholder="Leave empty = any company">
+              </div>
+              <div class="form-field">
+                <p class="small">Location contains</p>
+                <input type="text" name="location" value="{{ location }}" placeholder="Leave empty = any location">
+              </div>
+              <div class="form-field">
+                <p class="small">Posted text contains</p>
+                <input type="text" name="date_posted" value="{{ date_posted }}" placeholder="Leave empty = any posted date">
+              </div>
+              <div class="form-field">
+                <p class="small">Salary min (numeric)</p>
+                <input type="number" step="1" name="salary_min" value="{{ salary_min }}" placeholder="0 = no minimum">
+              </div>
+              <div class="form-field">
+                <p class="small">Salary max (numeric)</p>
+                <input type="number" step="1" name="salary_max" value="{{ salary_max }}" placeholder="0 = no maximum">
+              </div>
+              <div class="form-field">
+                <p class="small">Rows to display (1-1000)</p>
+                <input type="number" name="limit" value="{{ limit }}" min="1" max="1000">
+              </div>
+              <div class="form-field">
+                <p class="small">V popise ponuky: Pozícii vyhovujú uchádzači so vzdelaním</p>
+                <input type="text" name="section_education" value="{{ section_education }}" placeholder="vysokoškolské II. stupňa">
+              </div>
+              <div class="form-field">
+                <p class="small">V popise ponuky: Vzdelanie v odbore</p>
+                <input type="text" name="section_education_field" value="{{ section_education_field }}" placeholder="IT">
+              </div>
+              <div class="form-field">
+                <p class="small">V popise ponuky: Jazykové znalosti</p>
+                <input type="text" name="section_languages" value="{{ section_languages }}" placeholder="anglický, b1, c1">
+              </div>
+              <div class="form-field">
+                <p class="small">V popise ponuky: Ostatné znalosti</p>
+                <input type="text" name="section_other_knowledge" value="{{ section_other_knowledge }}" placeholder="aws, gcp, terraform, python">
+              </div>
+              <div class="form-field">
+                <p class="small">V popise ponuky: Prax na pozícii/v oblasti</p>
+                <input type="text" name="section_practice_area" value="{{ section_practice_area }}" placeholder="devops, sysadmin">
+              </div>
+              <div class="form-field">
+                <p class="small">V popise ponuky: Počet rokov praxe</p>
+                <input type="text" name="section_years_experience" value="{{ section_years_experience }}" placeholder="2">
+              </div>
+              <div class="form-field">
+                <p class="small">V popise ponuky: Osobnostné predpoklady a zručnosti</p>
+                <input type="text" name="section_personal_skills" value="{{ section_personal_skills }}" placeholder="proaktivita, tímový duch">
+              </div>
+              <div class="form-field">
+                <p class="small">V popise ponuky: Čo budeš robiť</p>
+                <input type="text" name="section_job_tasks" value="{{ section_job_tasks }}" placeholder="kubernetes, ci/cd, linux">
+              </div>
+              <div class="form-field form-field-inline">
+                <label>
+                  <input type="checkbox" name="remote_only" value="1" {% if remote_only %}checked{% endif %}>
+                  Remote/Home office only
+                </label>
+              </div>
+            </div>
+            <div class="actions">
+              <button type="submit">Apply</button>
+              <a class="ghost" href="{{ url_for('index') }}">Reset</a>
+            </div>
+          </form>
         </div>
-        <p class="small" style="margin-top: 8px;">Send notification using these filters</p>
-        <div class="grid" style="margin-bottom: 0;">
-          <div>
-            <p class="small">Recipient email</p>
-            <input type="email" name="recipient_email" value="{{ recipient_email }}" placeholder="name@example.com">
-          </div>
-          <div>
-            <p class="small">Send jobs posted up to (hours)</p>
-            <input type="number" step="1" min="1" name="notification_max_age_hours" value="{{ notification_max_age_hours }}" placeholder="24">
-          </div>
+      </details>
+    </div>
+
+    <div class="card" style="margin-bottom: 12px;">
+      <details class="dropdown-panel">
+        <summary>Send Notification</summary>
+        <div class="dropdown-content">
+          <p class="small">Send notifications for currently applied filters.</p>
+          <form method="post" action="{{ url_for('send_mails') }}">
+            <div class="grid" style="margin-bottom: 0;">
+              <div>
+                <p class="small">Recipient email</p>
+                <input type="email" name="recipient_email" value="{{ recipient_email }}" placeholder="name@example.com">
+              </div>
+              <div>
+                <p class="small">Send jobs posted up to (hours)</p>
+                <input type="number" step="1" min="1" name="notification_max_age_hours" value="{{ notification_max_age_hours }}" placeholder="24">
+              </div>
+            </div>
+            <input type="hidden" name="search" value="{{ search }}">
+            <input type="hidden" name="title" value="{{ title }}">
+            <input type="hidden" name="company" value="{{ company }}">
+            <input type="hidden" name="location" value="{{ location }}">
+            <input type="hidden" name="date_posted" value="{{ date_posted }}">
+            <input type="hidden" name="salary_min" value="{{ salary_min }}">
+            <input type="hidden" name="salary_max" value="{{ salary_max }}">
+            <input type="hidden" name="section_education" value="{{ section_education }}">
+            <input type="hidden" name="section_education_field" value="{{ section_education_field }}">
+            <input type="hidden" name="section_languages" value="{{ section_languages }}">
+            <input type="hidden" name="section_other_knowledge" value="{{ section_other_knowledge }}">
+            <input type="hidden" name="section_practice_area" value="{{ section_practice_area }}">
+            <input type="hidden" name="section_years_experience" value="{{ section_years_experience }}">
+            <input type="hidden" name="section_personal_skills" value="{{ section_personal_skills }}">
+            <input type="hidden" name="section_job_tasks" value="{{ section_job_tasks }}">
+            <input type="hidden" name="limit" value="{{ limit }}">
+            {% if remote_only %}
+              <input type="hidden" name="remote_only" value="1">
+            {% endif %}
+            <div class="actions">
+              <button type="submit">Send Notification</button>
+            </div>
+          </form>
         </div>
-        <div class="actions">
-          <button type="submit">Apply</button>
-          <button type="submit" formaction="{{ url_for('send_mails') }}">Send Notification</button>
-          <a class="ghost" href="{{ url_for('index') }}">Reset</a>
-        </div>
-      </form>
+      </details>
     </div>
 
     <div class="table-wrap">
@@ -378,55 +488,59 @@
     </div>
 
     <div class="card" style="margin-top: 12px;">
-      <h2>SMTP Configuration</h2>
-      <p class="small">Configure SMTP once. Sending notifications is done in Advanced Filter.</p>
-      <form method="post" action="{{ url_for('save_smtp') }}">
-        <p class="small" style="margin-top:10px;">SMTP host</p>
-        <input type="text" name="smtp_host" value="{{ smtp_host }}" placeholder="smtp.gmail.com">
-        <p class="small" style="margin-top:8px;">SMTP port</p>
-        <input type="number" step="1" min="1" name="smtp_port" value="{{ smtp_port }}" placeholder="587">
-        <p class="small" style="margin-top:8px;">SMTP user</p>
-        <input type="text" name="smtp_user" value="{{ smtp_user }}" placeholder="you@gmail.com">
-        <p class="small" style="margin-top:8px;">SMTP app password</p>
-        <input type="password" name="smtp_password" placeholder="Leave blank to keep saved password">
-        <p class="small" style="margin-top:8px;">SMTP from address</p>
-        <input type="email" name="smtp_from" value="{{ smtp_from }}" placeholder="you@gmail.com">
-        <p class="small" style="margin-top:8px;">SMTP timeout (seconds)</p>
-        <input type="number" step="1" min="1" name="smtp_timeout" value="{{ smtp_timeout }}" placeholder="30">
-        <div class="actions" style="margin-top:8px;">
-          <label style="display:flex;gap:8px;align-items:center;font-size:14px;">
-            <input type="checkbox" name="smtp_starttls" value="1" {% if smtp_starttls %}checked{% endif %}>
-            STARTTLS
-          </label>
-          <label style="display:flex;gap:8px;align-items:center;font-size:14px;">
-            <input type="checkbox" name="smtp_ssl" value="1" {% if smtp_ssl %}checked{% endif %}>
-            SSL
-          </label>
+      <details class="dropdown-panel">
+        <summary>SMTP Configuration</summary>
+        <div class="dropdown-content">
+          <p class="small">Configure SMTP once. Sending notifications is done in Send Notification.</p>
+          <form method="post" action="{{ url_for('save_smtp') }}">
+            <p class="small" style="margin-top:10px;">SMTP host</p>
+            <input type="text" name="smtp_host" value="{{ smtp_host }}" placeholder="smtp.gmail.com">
+            <p class="small" style="margin-top:8px;">SMTP port</p>
+            <input type="number" step="1" min="1" name="smtp_port" value="{{ smtp_port }}" placeholder="587">
+            <p class="small" style="margin-top:8px;">SMTP user</p>
+            <input type="text" name="smtp_user" value="{{ smtp_user }}" placeholder="you@gmail.com">
+            <p class="small" style="margin-top:8px;">SMTP app password</p>
+            <input type="password" name="smtp_password" placeholder="Leave blank to keep saved password">
+            <p class="small" style="margin-top:8px;">SMTP from address</p>
+            <input type="email" name="smtp_from" value="{{ smtp_from }}" placeholder="you@gmail.com">
+            <p class="small" style="margin-top:8px;">SMTP timeout (seconds)</p>
+            <input type="number" step="1" min="1" name="smtp_timeout" value="{{ smtp_timeout }}" placeholder="30">
+            <div class="actions" style="margin-top:8px;">
+              <label style="display:flex;gap:8px;align-items:center;font-size:14px;">
+                <input type="checkbox" name="smtp_starttls" value="1" {% if smtp_starttls %}checked{% endif %}>
+                STARTTLS
+              </label>
+              <label style="display:flex;gap:8px;align-items:center;font-size:14px;">
+                <input type="checkbox" name="smtp_ssl" value="1" {% if smtp_ssl %}checked{% endif %}>
+                SSL
+              </label>
+            </div>
+            <p class="small" style="margin-top:8px;">Gmail preset: host smtp.gmail.com, port 587, STARTTLS on, SSL off.</p>
+            <input type="hidden" name="search" value="{{ search }}">
+            <input type="hidden" name="title" value="{{ title }}">
+            <input type="hidden" name="company" value="{{ company }}">
+            <input type="hidden" name="location" value="{{ location }}">
+            <input type="hidden" name="date_posted" value="{{ date_posted }}">
+            <input type="hidden" name="salary_min" value="{{ salary_min }}">
+            <input type="hidden" name="salary_max" value="{{ salary_max }}">
+            <input type="hidden" name="section_education" value="{{ section_education }}">
+            <input type="hidden" name="section_education_field" value="{{ section_education_field }}">
+            <input type="hidden" name="section_languages" value="{{ section_languages }}">
+            <input type="hidden" name="section_other_knowledge" value="{{ section_other_knowledge }}">
+            <input type="hidden" name="section_practice_area" value="{{ section_practice_area }}">
+            <input type="hidden" name="section_years_experience" value="{{ section_years_experience }}">
+            <input type="hidden" name="section_personal_skills" value="{{ section_personal_skills }}">
+            <input type="hidden" name="section_job_tasks" value="{{ section_job_tasks }}">
+            <input type="hidden" name="limit" value="{{ limit }}">
+            {% if remote_only %}
+              <input type="hidden" name="remote_only" value="1">
+            {% endif %}
+            <div class="actions">
+              <button type="submit">Save SMTP Configuration</button>
+            </div>
+          </form>
         </div>
-        <p class="small" style="margin-top:8px;">Gmail preset: host smtp.gmail.com, port 587, STARTTLS on, SSL off.</p>
-        <input type="hidden" name="search" value="{{ search }}">
-        <input type="hidden" name="title" value="{{ title }}">
-        <input type="hidden" name="company" value="{{ company }}">
-        <input type="hidden" name="location" value="{{ location }}">
-        <input type="hidden" name="date_posted" value="{{ date_posted }}">
-        <input type="hidden" name="salary_min" value="{{ salary_min }}">
-        <input type="hidden" name="salary_max" value="{{ salary_max }}">
-        <input type="hidden" name="section_education" value="{{ section_education }}">
-        <input type="hidden" name="section_education_field" value="{{ section_education_field }}">
-        <input type="hidden" name="section_languages" value="{{ section_languages }}">
-        <input type="hidden" name="section_other_knowledge" value="{{ section_other_knowledge }}">
-        <input type="hidden" name="section_practice_area" value="{{ section_practice_area }}">
-        <input type="hidden" name="section_years_experience" value="{{ section_years_experience }}">
-        <input type="hidden" name="section_personal_skills" value="{{ section_personal_skills }}">
-        <input type="hidden" name="section_job_tasks" value="{{ section_job_tasks }}">
-        <input type="hidden" name="limit" value="{{ limit }}">
-        {% if remote_only %}
-          <input type="hidden" name="remote_only" value="1">
-        {% endif %}
-        <div class="actions">
-          <button type="submit">Save SMTP Configuration</button>
-        </div>
-      </form>
+      </details>
     </div>
   </div>
 </body>

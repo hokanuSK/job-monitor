@@ -325,6 +325,106 @@ class WebFilterRouteTests(unittest.TestCase):
             ["Python Backend Engineer", "Data Engineer", "QA Engineer"],
         )
 
+    def test_save_smtp_route_saves_config_and_keeps_filters_in_redirect(self):
+        client = web_app.app.test_client()
+        existing_settings = {
+            "recipient_email": "notify@example.com",
+            "notification_max_age_hours": "24",
+            "smtp_host": "old.smtp.local",
+            "smtp_port": "587",
+            "smtp_user": "old-user",
+            "smtp_password": "saved-password",
+            "smtp_from": "old-from@example.com",
+            "smtp_starttls": "1",
+            "smtp_ssl": "0",
+            "smtp_timeout": "30",
+        }
+        payload = {
+            "title": "Python",
+            "limit": "20",
+            "remote_only": "1",
+            "smtp_host": "smtp.example.com",
+            "smtp_port": "465",
+            "smtp_user": "smtp-user",
+            "smtp_password": "",
+            "smtp_from": "sender@example.com",
+            "smtp_timeout": "45",
+            "smtp_ssl": "1",
+        }
+
+        with (
+            patch("src.web_app.ensure_updater_started"),
+            patch("src.web_app.load_settings", return_value=existing_settings),
+            patch("src.web_app.save_settings") as save_settings_mock,
+        ):
+            response = client.post("/save-smtp", data=payload)
+
+        self.assertEqual(response.status_code, 302)
+        query = parse_qs(urlparse(response.headers["Location"]).query)
+        self.assertEqual(query["title"], ["Python"])
+        self.assertEqual(query["limit"], ["20"])
+        self.assertEqual(query["remote_only"], ["1"])
+
+        save_settings_mock.assert_called_once()
+        saved_recipient, saved_hours, saved_smtp = save_settings_mock.call_args[0]
+        self.assertEqual(saved_recipient, "notify@example.com")
+        self.assertEqual(saved_hours, "24")
+        self.assertEqual(saved_smtp["smtp_host"], "smtp.example.com")
+        self.assertEqual(saved_smtp["smtp_port"], "465")
+        self.assertEqual(saved_smtp["smtp_user"], "smtp-user")
+        self.assertEqual(saved_smtp["smtp_password"], "saved-password")
+        self.assertEqual(saved_smtp["smtp_from"], "sender@example.com")
+        self.assertEqual(saved_smtp["smtp_timeout"], "45")
+        self.assertEqual(saved_smtp["smtp_ssl"], "1")
+        self.assertEqual(saved_smtp["smtp_starttls"], "0")
+
+    def test_send_mails_route_uses_saved_smtp_settings(self):
+        client = web_app.app.test_client()
+        existing_settings = {
+            "recipient_email": "old@example.com",
+            "notification_max_age_hours": "24",
+            "smtp_host": "smtp.example.com",
+            "smtp_port": "587",
+            "smtp_user": "smtp-user",
+            "smtp_password": "smtp-pass",
+            "smtp_from": "sender@example.com",
+            "smtp_starttls": "1",
+            "smtp_ssl": "0",
+            "smtp_timeout": "30",
+        }
+        payload = {
+            "title": "Python",
+            "limit": "20",
+            "recipient_email": "receiver@example.com",
+            "notification_max_age_hours": "12",
+        }
+
+        with (
+            patch("src.web_app.ensure_updater_started"),
+            patch("src.web_app.load_settings", return_value=existing_settings),
+            patch("src.web_app.save_settings"),
+            patch("src.web_app.build_filtered_jobs_df", return_value=pd.DataFrame()),
+            patch("src.web_app.filter_jobs_by_post_age", return_value=pd.DataFrame()),
+            patch("src.web_app.send_jobs_email", return_value=(True, "sent")) as send_mock,
+        ):
+            response = client.post("/send-mails", data=payload)
+
+        self.assertEqual(response.status_code, 302)
+        query = parse_qs(urlparse(response.headers["Location"]).query)
+        self.assertEqual(query["title"], ["Python"])
+        self.assertEqual(query["limit"], ["20"])
+
+        send_mock.assert_called_once()
+        recipient, max_age_hours, _, smtp_config = send_mock.call_args[0]
+        self.assertEqual(recipient, "receiver@example.com")
+        self.assertEqual(max_age_hours, 12)
+        self.assertEqual(smtp_config["smtp_host"], "smtp.example.com")
+        self.assertEqual(smtp_config["smtp_port"], "587")
+        self.assertEqual(smtp_config["smtp_user"], "smtp-user")
+        self.assertEqual(smtp_config["smtp_from"], "sender@example.com")
+        self.assertEqual(smtp_config["smtp_starttls"], "1")
+        self.assertEqual(smtp_config["smtp_ssl"], "0")
+
 
 class SmtpUnitTests(unittest.TestCase):
     def test_read_smtp_settings_keeps_existing_password_when_blank(self):
