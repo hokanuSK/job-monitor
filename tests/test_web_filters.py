@@ -4,7 +4,7 @@ from urllib.parse import parse_qs, urlparse
 
 import pandas as pd
 
-import web_app
+import src.web_app as web_app
 
 
 def make_filters(**overrides):
@@ -160,7 +160,7 @@ def email_jobs_df() -> pd.DataFrame:
 class WebFilterUnitTests(unittest.TestCase):
     def build_filtered(self, **filter_overrides):
         filters = make_filters(**filter_overrides)
-        with patch("web_app.load_jobs_from_database", return_value=sample_jobs_df()):
+        with patch("src.web_app.load_jobs_from_database", return_value=sample_jobs_df()):
             return web_app.build_filtered_jobs_df(filters)
 
     def test_parse_filter_terms_normalizes_and_deduplicates(self):
@@ -214,12 +214,12 @@ class WebFilterRouteTests(unittest.TestCase):
     def _render_index(query: dict) -> str:
         client = web_app.app.test_client()
         with (
-            patch("web_app.ensure_updater_started"),
+            patch("src.web_app.ensure_updater_started"),
             patch(
-                "web_app.load_settings",
+                "src.web_app.load_settings",
                 return_value={"recipient_email": "", "notification_max_age_hours": "24"},
             ),
-            patch("web_app.load_jobs_from_database", return_value=sample_jobs_df()),
+            patch("src.web_app.load_jobs_from_database", return_value=sample_jobs_df()),
         ):
             response = client.get("/", query_string=query)
 
@@ -237,7 +237,7 @@ class WebFilterRouteTests(unittest.TestCase):
 
     def test_apply_route_redirects_with_filter_query(self):
         client = web_app.app.test_client()
-        with patch("web_app.ensure_updater_started"):
+        with patch("src.web_app.ensure_updater_started"):
             response = client.post(
                 "/apply",
                 data={"title": "Python", "limit": "20", "remote_only": "1"},
@@ -270,7 +270,7 @@ class WebFilterRouteTests(unittest.TestCase):
             "remote_only": "1",
             "limit": "9999",
         }
-        with patch("web_app.ensure_updater_started"):
+        with patch("src.web_app.ensure_updater_started"):
             response = client.post("/apply", data=payload)
 
         self.assertEqual(response.status_code, 302)
@@ -373,7 +373,7 @@ class SmtpUnitTests(unittest.TestCase):
 
         with (
             patch.dict("os.environ", {}, clear=True),
-            patch("web_app.smtplib.SMTP", smtp_cls),
+            patch("src.web_app.smtplib.SMTP", smtp_cls),
         ):
             ok, message = web_app.send_jobs_email(
                 "receiver@example.com",
@@ -417,7 +417,7 @@ class SmtpUnitTests(unittest.TestCase):
                 },
                 clear=True,
             ),
-            patch("web_app.smtplib.SMTP", smtp_cls),
+            patch("src.web_app.smtplib.SMTP", smtp_cls),
         ):
             ok, message = web_app.send_jobs_email("receiver@example.com", 24, email_jobs_df())
 
@@ -445,7 +445,7 @@ class SmtpUnitTests(unittest.TestCase):
                 },
                 clear=True,
             ),
-            patch("web_app.smtplib.SMTP", smtp_cls),
+            patch("src.web_app.smtplib.SMTP", smtp_cls),
         ):
             ok, message = web_app.send_jobs_email("receiver@example.com", 24, email_jobs_df())
 
@@ -485,8 +485,8 @@ class SmtpUnitTests(unittest.TestCase):
                 },
                 clear=True,
             ),
-            patch("web_app.smtplib.SMTP_SSL", smtp_ssl_cls),
-            patch("web_app.smtplib.SMTP", MagicMock()) as smtp_plain_cls,
+            patch("src.web_app.smtplib.SMTP_SSL", smtp_ssl_cls),
+            patch("src.web_app.smtplib.SMTP", MagicMock()) as smtp_plain_cls,
         ):
             ok, _ = web_app.send_jobs_email("receiver@example.com", 24, email_jobs_df())
 

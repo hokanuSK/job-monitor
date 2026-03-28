@@ -31,7 +31,7 @@ cd "$ROOT_DIR"
 import os
 import pandas as pd
 
-from web_app import send_jobs_email
+from src.web_app import send_jobs_email
 
 recipient = os.environ["TEST_RECIPIENT"]
 max_age_hours = float(os.environ["MAX_AGE_HOURS"])

@@ -23,8 +23,8 @@ and can send email notifications for jobs matching your currently applied filter
 
 ## Main Components
 
-- `web_app.py`: Flask web app, updater thread, filters, SMTP notifications.
-- `mysql_store.py`: DB schema management, upsert/load logic, salary parsing.
+- `src/web_app.py`: Flask web app, updater thread, filters, SMTP notifications.
+- `src/mysql_store.py`: DB schema management, upsert/load logic, salary parsing.
 - `templates/index.html`: Job Monitor UI.
 - `src/job_monitor.py`: Scrapy spider for CSV/XLSX export and detail description extraction.
 - `docker-compose.yml`: Optional local MySQL service.
@@ -48,7 +48,7 @@ pip install flask pandas requests parsel pymysql scrapy openpyxl
 3. Run the web app:
 
 ```bash
-python web_app.py
+python -m src.web_app
 ```
 
 4. Open:

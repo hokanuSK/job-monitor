@@ -328,8 +328,20 @@
             </label>
           </div>
         </div>
+        <p class="small" style="margin-top: 8px;">Send notification using these filters</p>
+        <div class="grid" style="margin-bottom: 0;">
+          <div>
+            <p class="small">Recipient email</p>
+            <input type="email" name="recipient_email" value="{{ recipient_email }}" placeholder="name@example.com">
+          </div>
+          <div>
+            <p class="small">Send jobs posted up to (hours)</p>
+            <input type="number" step="1" min="1" name="notification_max_age_hours" value="{{ notification_max_age_hours }}" placeholder="24">
+          </div>
+        </div>
         <div class="actions">
           <button type="submit">Apply</button>
+          <button type="submit" formaction="{{ url_for('send_mails') }}">Send Notification</button>
           <a class="ghost" href="{{ url_for('index') }}">Reset</a>
         </div>
       </form>
@@ -366,13 +378,9 @@
     </div>
 
     <div class="card" style="margin-top: 12px;">
-      <h2>Send Notifications</h2>
-      <p class="small">Send notifications for the currently applied filters.</p>
-      <p class="small">Only jobs matching current filters and not older than selected age will be sent.</p>
-      <form method="post" action="{{ url_for('send_mails') }}">
-        <input type="email" name="recipient_email" value="{{ recipient_email }}" placeholder="name@example.com">
-        <p class="small" style="margin-top:8px;">Max posted age in hours</p>
-        <input type="number" step="1" min="1" name="notification_max_age_hours" value="{{ notification_max_age_hours }}" placeholder="24" style="margin-top:8px;">
+      <h2>SMTP Configuration</h2>
+      <p class="small">Configure SMTP once. Sending notifications is done in Advanced Filter.</p>
+      <form method="post" action="{{ url_for('save_smtp') }}">
         <p class="small" style="margin-top:10px;">SMTP host</p>
         <input type="text" name="smtp_host" value="{{ smtp_host }}" placeholder="smtp.gmail.com">
         <p class="small" style="margin-top:8px;">SMTP port</p>
@@ -416,7 +424,7 @@
           <input type="hidden" name="remote_only" value="1">
         {% endif %}
         <div class="actions">
-          <button type="submit">Send mails for applied filter</button>
+          <button type="submit">Save SMTP Configuration</button>
         </div>
       </form>
     </div>

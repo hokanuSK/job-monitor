@@ -17,10 +17,14 @@ import requests
 from flask import Flask, flash, redirect, render_template, request, url_for
 from parsel import Selector
 
-from mysql_store import MySQLJobStore, normalize_job_url
+try:
+    from .mysql_store import MySQLJobStore, normalize_job_url
+except ImportError:
+    # Allow direct execution (e.g. `python src/web_app.py`) without package context.
+    from mysql_store import MySQLJobStore, normalize_job_url
 
 
-BASE_DIR = Path(__file__).resolve().parent
+BASE_DIR = Path(__file__).resolve().parent.parent
 JOBS_PATH = BASE_DIR / "jobs.csv"
 SETTINGS_PATH = BASE_DIR / "app_settings.json"
 LISTING_URL = "https://www.profesia.sk/praca/"
@@ -118,7 +122,7 @@ _updater_status = "Updater has not run yet."
 _updater_error = ""
 
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder=str(BASE_DIR / "templates"))
 app.config["SECRET_KEY"] = os.environ.get("FLASK_SECRET_KEY", "change-me")
 
 SMTP_SETTING_KEYS = (
@@ -1116,6 +1120,20 @@ def apply_filters():
     return redirect(url_for("index", **filters_to_query(filters)))
 
 
+@app.route("/save-smtp", methods=["POST"])
+def save_smtp():
+    ensure_updater_started()
+    filters = read_filters(request.form)
+    existing_settings = load_settings()
+    smtp_settings = read_smtp_settings(request.form, existing_settings)
+    recipient_email = str(existing_settings.get("recipient_email", "")).strip()
+    max_age_text = str(existing_settings.get("notification_max_age_hours", "24")).strip()
+
+    save_settings(recipient_email, max_age_text, smtp_settings)
+    flash("SMTP configuration saved.")
+    return redirect(url_for("index", **filters_to_query(filters)))
+
+
 @app.route("/send-mails", methods=["POST"])
 def send_mails():
     ensure_updater_started()
@@ -1123,7 +1141,7 @@ def send_mails():
     existing_settings = load_settings()
     recipient_email = request.form.get("recipient_email", "").strip()
     max_age_text = request.form.get("notification_max_age_hours", "").strip()
-    smtp_settings = read_smtp_settings(request.form, existing_settings)
+    smtp_settings = normalize_smtp_settings(existing_settings, existing_settings)
 
     if not is_valid_email(recipient_email):
         flash("Invalid email format. Please provide a valid recipient email.")

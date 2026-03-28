@@ -6,10 +6,10 @@
 - Job descriptions are now scraped and stored; filters can target specific requirement sections from job detail text.
 
 ## Main Files
-- `web_app.py`: Flask routes, updater thread, listing scrape, detail description extraction, section filters, notification send.
-- `mysql_store.py`: MySQL schema, upsert/load, URL normalization, missing-description lookup + update helpers.
+- `src/web_app.py`: Flask routes, updater thread, listing scrape, detail description extraction, section filters, notification send.
+- `src/mysql_store.py`: MySQL schema, upsert/load, URL normalization, missing-description lookup + update helpers.
 - `templates/index.html`: UI filter form (including section-based requirement filters) and send notifications form.
-- `main.py`: Scrapy spider for CSV/XLSX export, now also visits detail pages to populate `description`.
+- `src/job_monitor.py`: Scrapy spider for CSV/XLSX export, now also visits detail pages to populate `description`.
 - `app_settings.json`: persisted `recipient_email` and `notification_max_age_hours`.
 - `docker-compose.yml`: optional MySQL service (may conflict with existing host MySQL on `3306`).
 
@@ -107,7 +107,7 @@ Notes:
 ```bash
 cd /Users/admin/job-monitor
 source .venv/bin/activate
-python web_app.py
+python -m src.web_app
 ```
 - App URL: `http://127.0.0.1:5000`
 
