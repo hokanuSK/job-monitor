@@ -1,4 +1,4 @@
-# Future Agent Notes (CVsender)
+# Future Agent Notes (Job Monitor)
 
 ## Snapshot
 - Last updated: 2026-03-28.
@@ -105,7 +105,7 @@ Notes:
 
 ## Quick Run
 ```bash
-cd /Users/admin/CVsender
+cd /Users/admin/job-monitor
 source .venv/bin/activate
 python web_app.py
 ```
