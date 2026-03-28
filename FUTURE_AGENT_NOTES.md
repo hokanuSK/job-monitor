@@ -4,6 +4,7 @@
 - Last updated: 2026-03-28.
 - App is a local Flask UI with MySQL-backed jobs, offline filtering, and SMTP notifications.
 - Job descriptions are now scraped and stored; filters can target specific requirement sections from job detail text.
+- Notification emails now send as multipart digests with styled HTML + plain-text fallback.
 
 ## Main Files
 - `src/web_app.py`: Flask routes, updater thread, listing scrape, detail description extraction, section filters, notification send.
@@ -25,7 +26,7 @@
 - `POST /send-mails`
   - Uses currently applied filters from hidden fields.
   - Applies max-age cutoff in hours.
-  - Sends one email with matched jobs via SMTP.
+  - Sends one multipart email with matched jobs via SMTP (plain text + HTML alternative).
 
 ## Description + Section Filtering
 - Listing updater (`scrape_first_page_jobs`) now fetches each job detail page and stores `description`.
@@ -81,6 +82,28 @@ Notes:
 - `SMTP_PASSWORD` optional
 - `SMTP_FROM` optional fallback to `SMTP_USER`
 - `SMTP_STARTTLS` default `1` (`0/false/no` disables TLS)
+- `SMTP_SSL` optional (`1` uses SSL transport, must not be combined with STARTTLS)
+- `SMTP_TIMEOUT` default `30` seconds
+
+## Email Digest Notes (2026-03-28)
+- Rendering split into dedicated helpers in `web_app.py`:
+  - `build_jobs_email_text(...)`
+  - `build_jobs_email_html(...)`
+- HTML digest includes:
+  - Branded header block
+  - Summary cards (criteria window + matched count)
+  - Styled per-job rows with direct listing links
+  - Truncation hint if digest exceeds max listed rows
+- Defensive sanitization for digest fields:
+  - Text fields collapsed and normalized via `email_safe_text(...)`
+  - URL links restricted to `http://` or `https://` via `email_safe_url(...)`
+- `send_jobs_email(...)` now calls:
+  - `msg.set_content(text_body)`
+  - `msg.add_alternative(html_body, subtype="html")`
+- Unit test coverage:
+  - Existing SMTP tests still pass.
+  - Added assertions in `tests/test_web_filters.py` to verify multipart content type and HTML body markers.
+  - Last run: `.venv/bin/python -m unittest tests/test_web_filters.py` -> `Ran 18 tests ... OK`.
 
 ## Local SMTP Testing
 - Port `1025` was free when checked; no local SMTP server was running.
@@ -102,6 +125,8 @@ Notes:
 2. Add explicit UI empty-state row/message when filtered result set is zero.
 3. Add SMTP test endpoint/button (send test mail without job digest).
 4. Consider persisting parsed sections in DB for faster section filtering at scale.
+5. Add optional digest theme presets (compact, detailed, dark-light neutral) configurable from UI.
+6. Add optional include/exclude fields for digest rows (salary, location, posted age, link-only mode).
 
 ## Quick Run
 ```bash
