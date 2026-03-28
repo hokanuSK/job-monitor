@@ -123,6 +123,8 @@ python web_app.py
   - Main centered title: `Job Monitor`.
   - Quote moved under title with emphasized lead words `Kto` and `Pre`.
   - Color theme changed to blue gradient to align with primary button color (`--accent: #1462ff`).
+- Title quote was replaced with a longer multi-line Slovak verse and later corrected (`toho` -> `tomu`).
+- Final sentence in the quote is forced to one row on desktop via `.fancy-line-one-row` with mobile wrap fallback.
 - `Send Notifications` form was moved below the jobs table (bottom of page).
 - Runtime compatibility fix: created symlink `/Users/admin/CVsender -> /Users/admin/job-monitor` to avoid `TemplateNotFound: index.html` when old path is used.
-- README screenshot still uses `assets/job-monitor.png`; image was refreshed from local screenshot and is currently modified in working tree.
+- README screenshot still uses `assets/job-monitor.png`; image was refreshed from a local screenshot.

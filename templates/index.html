@@ -76,8 +76,16 @@
       display: block;
       margin-top: 2px;
     }
+    .fancy-title .fancy-line-one-row {
+      white-space: nowrap;
+    }
     .fancy-title .fancy-line:first-child {
       margin-top: 0;
+    }
+    @media (max-width: 900px) {
+      .fancy-title .fancy-line-one-row {
+        white-space: normal;
+      }
     }
     .fancy-title .lead-word {
       display: inline-block;
@@ -210,12 +218,11 @@
       <h1>Job Monitor</h1>
       <p class="fancy-subtitle">
         <span class="fancy-line"><span class="lead-word">Kto</span> sa Andymu vysmeje,</span>
-        <span class="fancy-line">toho jeho hruď hlavu rozbije!</span>
+        <span class="fancy-line">tomu jeho hruď hlavu rozbije!</span>
         <span class="fancy-line"><span class="lead-word">A</span> kto sa pritom neusmeje,</span>
         <span class="fancy-line">tomu vari niečo zle je?</span>
         <span class="fancy-line"><span class="lead-word">Pre</span> iných za lásku, pre Andyho za facku!</span>
-        <span class="fancy-line"><span class="lead-word">Kto</span> sa hanbí,</span>
-        <span class="fancy-line">ten má prázdne gamby!</span>
+        <span class="fancy-line fancy-line-one-row"><span class="lead-word">Kto</span> sa hanbí, ten má prázdne gamby!</span>
       </p>
     </div>
 
