@@ -117,4 +117,12 @@ python web_app.py
 - Renamed GitHub repository from `CVsender` to `job-monitor` (private).
 - Renamed local folder from `/Users/admin/CVsender` to `/Users/admin/job-monitor`.
 - Updated project branding from `CVsender` to `Job Monitor`.
-- Note: `README.md` references `assets/job-monitor.png`; image file is still not committed.
+
+## UI Notes (2026-03-28)
+- Header/hero at top was redesigned:
+  - Main centered title: `Job Monitor`.
+  - Quote moved under title with emphasized lead words `Kto` and `Pre`.
+  - Color theme changed to blue gradient to align with primary button color (`--accent: #1462ff`).
+- `Send Notifications` form was moved below the jobs table (bottom of page).
+- Runtime compatibility fix: created symlink `/Users/admin/CVsender -> /Users/admin/job-monitor` to avoid `TemplateNotFound: index.html` when old path is used.
+- README screenshot still uses `assets/job-monitor.png`; image was refreshed from local screenshot and is currently modified in working tree.
