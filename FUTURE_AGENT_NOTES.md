@@ -110,3 +110,11 @@ source .venv/bin/activate
 python web_app.py
 ```
 - App URL: `http://127.0.0.1:5000`
+
+## Recent Changes (2026-03-28)
+- Initialized git repository and pushed `main`.
+- Expanded `README.md` with overview, features, architecture, and quick-start instructions.
+- Renamed GitHub repository from `CVsender` to `job-monitor` (private).
+- Renamed local folder from `/Users/admin/CVsender` to `/Users/admin/job-monitor`.
+- Updated project branding from `CVsender` to `Job Monitor`.
+- Note: `README.md` references `assets/job-monitor.png`; image file is still not committed.
