@@ -461,6 +461,13 @@ class SmtpUnitTests(unittest.TestCase):
         self.assertEqual(sent_message["To"], "receiver@example.com")
         self.assertEqual(sent_message["From"], "sender@example.com")
         self.assertIn("2 jobs within 24h", sent_message["Subject"])
+        self.assertEqual(sent_message.get_content_type(), "multipart/alternative")
+        html_part = sent_message.get_body(preferencelist=("html",))
+        self.assertIsNotNone(html_part)
+        html_content = html_part.get_content()
+        self.assertIn("Job Monitor Notification", html_content)
+        self.assertIn("Open listing", html_content)
+        self.assertIn("Python Backend Engineer", html_content)
 
     def test_send_jobs_email_uses_ssl_transport(self):
         smtp_ssl_cls = MagicMock()

@@ -18,7 +18,7 @@ and can send email notifications for jobs matching your currently applied filter
   - numeric salary min/max
   - remote/home-office-only
   - section-based filters from parsed job description text
-- Sends SMTP digest emails for currently applied filters and max job age in hours.
+- Sends multipart SMTP digest emails (styled HTML + plain text fallback) for currently applied filters and max job age in hours.
 - Includes standalone scraping export via Scrapy (`jobs.csv`, `jobs.xlsx`).
 
 ## Main Components

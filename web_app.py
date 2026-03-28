@@ -8,7 +8,7 @@ from datetime import datetime
 from email.message import EmailMessage
 from email.utils import parseaddr
 from functools import lru_cache
-from html import unescape
+from html import escape, unescape
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
@@ -499,6 +499,156 @@ def filter_jobs_by_post_age(jobs_df: pd.DataFrame, max_age_hours: float) -> pd.D
     filtered = filtered.sort_values(by=["posted_age_hours", "title"], na_position="last")
     return filtered
 
+
+def email_safe_text(value: object, fallback: str = "N/A") -> str:
+    text = collapse_spaces(str(value if value is not None else ""))
+    return text if text else fallback
+
+
+def email_safe_url(value: object) -> str:
+    url = str(value if value is not None else "").strip()
+    if url.startswith(("http://", "https://")):
+        return url
+    return ""
+
+
+def build_jobs_email_text(
+    listed_jobs: pd.DataFrame,
+    total_jobs: int,
+    max_age_hours: float,
+    sent_at: str,
+    max_list: int,
+) -> str:
+    lines = [
+        "Job Monitor Notification",
+        f"Sent at: {sent_at}",
+        f"Criteria: jobs posted within last {max_age_hours:g} hours",
+        f"Matched jobs: {total_jobs}",
+        "",
+    ]
+
+    if listed_jobs.empty:
+        lines.append("No jobs matched the selected age threshold.")
+        return "\n".join(lines)
+
+    for position, row in enumerate(listed_jobs.itertuples(index=False), start=1):
+        title = email_safe_text(getattr(row, "title", ""), "Untitled role")
+        company = email_safe_text(getattr(row, "company", ""))
+        location = email_safe_text(getattr(row, "location", ""))
+        posted = email_safe_text(getattr(row, "date_posted", ""), "Unknown")
+        salary = email_safe_text(getattr(row, "salary", ""))
+        url = email_safe_url(getattr(row, "url", ""))
+
+        lines.append(f"{position}. {title}")
+        lines.append(f"   Company: {company}")
+        lines.append(f"   Location: {location}")
+        lines.append(f"   Posted: {posted}")
+        lines.append(f"   Salary: {salary}")
+        if url:
+            lines.append(f"   URL: {url}")
+        lines.append("")
+
+    if total_jobs > max_list:
+        lines.append(f"...and {total_jobs - max_list} more jobs.")
+
+    return "\n".join(lines)
+
+
+def build_jobs_email_html(
+    listed_jobs: pd.DataFrame,
+    total_jobs: int,
+    max_age_hours: float,
+    sent_at: str,
+    max_list: int,
+) -> str:
+    if listed_jobs.empty:
+        rows_html = (
+            '<tr><td style="padding:16px;color:#334155;font-size:14px;">'
+            "No jobs matched the selected age threshold."
+            "</td></tr>"
+        )
+    else:
+        rows = []
+        for position, row in enumerate(listed_jobs.itertuples(index=False), start=1):
+            title = escape(email_safe_text(getattr(row, "title", ""), "Untitled role"))
+            company = escape(email_safe_text(getattr(row, "company", "")))
+            location = escape(email_safe_text(getattr(row, "location", "")))
+            posted = escape(email_safe_text(getattr(row, "date_posted", ""), "Unknown"))
+            salary = escape(email_safe_text(getattr(row, "salary", "")))
+            url = email_safe_url(getattr(row, "url", ""))
+            if url:
+                action_html = (
+                    f'<a href="{escape(url, quote=True)}" '
+                    'style="color:#0f62fe;text-decoration:none;font-weight:600;">Open listing</a>'
+                )
+            else:
+                action_html = '<span style="color:#64748b;">URL not available</span>'
+
+            rows.append(
+                "<tr>"
+                '<td style="padding:14px 16px;border-bottom:1px solid #e4eaf3;">'
+                f'<div style="font-size:15px;font-weight:700;color:#0f172a;">{position}. {title}</div>'
+                f'<div style="margin-top:5px;font-size:13px;color:#334155;">{company} | {location}</div>'
+                f'<div style="margin-top:5px;font-size:12px;color:#64748b;">Posted: {posted} | Salary: {salary}</div>'
+                f'<div style="margin-top:8px;font-size:12px;">{action_html}</div>'
+                "</td>"
+                "</tr>"
+            )
+        rows_html = "".join(rows)
+
+    extra_html = ""
+    if total_jobs > max_list:
+        extra_html = (
+            f'<p style="margin:16px 0 0;color:#92400e;font-size:12px;">'
+            f"...and {total_jobs - max_list} more jobs not shown in this digest."
+            "</p>"
+        )
+
+    return (
+        "<!doctype html>"
+        '<html><body style="margin:0;padding:0;background:#eef3f9;font-family:Segoe UI,Arial,sans-serif;">'
+        '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" '
+        'style="background:#eef3f9;padding:24px 12px;">'
+        "<tr><td align=\"center\">"
+        '<table role="presentation" width="680" cellpadding="0" cellspacing="0" '
+        'style="max-width:680px;width:100%;background:#ffffff;border-radius:14px;overflow:hidden;'
+        'border:1px solid #d9e2ef;">'
+        '<tr><td style="padding:24px;background:linear-gradient(120deg,#0f172a,#1d4ed8);">'
+        '<h1 style="margin:0;color:#ffffff;font-size:22px;">Job Monitor Notification</h1>'
+        f'<p style="margin:8px 0 0;color:#dbeafe;font-size:13px;">Sent at: {escape(sent_at)}</p>'
+        "</td></tr>"
+        '<tr><td style="padding:18px 24px 12px 24px;">'
+        '<table role="presentation" width="100%" cellpadding="0" cellspacing="0">'
+        "<tr>"
+        '<td style="padding:12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;">'
+        f'<div style="font-size:11px;color:#64748b;text-transform:uppercase;">Criteria</div>'
+        f'<div style="margin-top:4px;font-size:14px;color:#0f172a;font-weight:600;">'
+        f"Last {max_age_hours:g} hours</div>"
+        "</td>"
+        '<td style="width:12px;"></td>'
+        '<td style="padding:12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;">'
+        f'<div style="font-size:11px;color:#64748b;text-transform:uppercase;">Matched Jobs</div>'
+        f'<div style="margin-top:4px;font-size:14px;color:#0f172a;font-weight:600;">{total_jobs}</div>'
+        "</td>"
+        "</tr>"
+        "</table>"
+        "</td></tr>"
+        '<tr><td style="padding:0 24px 24px 24px;">'
+        '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" '
+        'style="border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;background:#ffffff;">'
+        f"{rows_html}"
+        "</table>"
+        f"{extra_html}"
+        '<p style="margin:16px 0 0;color:#64748b;font-size:11px;">'
+        "This digest reflects your currently applied filters in Job Monitor."
+        "</p>"
+        "</td></tr>"
+        "</table>"
+        "</td></tr>"
+        "</table>"
+        "</body></html>"
+    )
+
 def send_jobs_email(
     recipient_email: str,
     max_age_hours: float,
@@ -531,33 +681,28 @@ def send_jobs_email(
 
     max_list = 200
     listed_jobs = jobs_df.head(max_list)
-    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-    lines = [
-        "Job Monitor Notification",
-        f"Sent at: {now}",
-        f"Criteria: jobs posted within last {max_age_hours:g} hours",
-        f"Matched jobs: {len(jobs_df)}",
-        "",
-    ]
-
-    if listed_jobs.empty:
-        lines.append("No jobs matched the selected age threshold.")
-    else:
-        for row in listed_jobs.itertuples(index=False):
-            lines.append(
-                f"- [{row.date_posted}] {row.title} | {row.company} | {row.location} | {row.salary}"
-            )
-            lines.append(f"  {row.url}")
-        if len(jobs_df) > max_list:
-            lines.append("")
-            lines.append(f"...and {len(jobs_df) - max_list} more jobs.")
+    sent_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    text_body = build_jobs_email_text(
+        listed_jobs=listed_jobs,
+        total_jobs=len(jobs_df),
+        max_age_hours=max_age_hours,
+        sent_at=sent_at,
+        max_list=max_list,
+    )
+    html_body = build_jobs_email_html(
+        listed_jobs=listed_jobs,
+        total_jobs=len(jobs_df),
+        max_age_hours=max_age_hours,
+        sent_at=sent_at,
+        max_list=max_list,
+    )
 
     msg = EmailMessage()
     msg["Subject"] = f"Job Monitor: {len(jobs_df)} jobs within {max_age_hours:g}h"
     msg["From"] = smtp_from
     msg["To"] = recipient_email
-    msg.set_content("\\n".join(lines))
+    msg.set_content(text_body)
+    msg.add_alternative(html_body, subtype="html")
 
     try:
         smtp_cls = smtplib.SMTP_SSL if smtp_ssl else smtplib.SMTP
