@@ -1,12 +1,11 @@
+![Job Monitor screenshot](assets/job-monitor.png)
+
 # Job Monitor
 
 Job Monitor is a local job-monitoring tool focused on IT listings from `profesia.sk`.
 It continuously ingests jobs into MySQL, lets you apply advanced filters in a web UI,
 and can send email notifications for jobs matching your currently applied filters.
 
-## UI Preview
-
-![Job Monitor screenshot](assets/job-monitor.png)
 
 ## What This Software Does
 
