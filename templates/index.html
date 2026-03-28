@@ -43,6 +43,61 @@
       font-size: 28px;
       letter-spacing: 0.4px;
     }
+    .fancy-title {
+      margin: 0 0 14px;
+      padding: 16px 18px;
+      border-radius: 16px;
+      border: 1px solid rgba(195, 220, 255, 0.75);
+      background: linear-gradient(126deg, #0b3ea8 0%, #1462ff 42%, #2e80ff 74%, #74b4ff 100%);
+      background-size: 180% 180%;
+      box-shadow: 0 14px 30px rgba(9, 34, 99, 0.34), inset 0 0 0 1px rgba(255, 255, 255, 0.22);
+      animation: title-glow 8s ease infinite;
+      text-align: center;
+    }
+    .fancy-title h1 {
+      margin: 0;
+      font-size: clamp(42px, 8vw, 92px);
+      line-height: 0.96;
+      letter-spacing: 1.2px;
+      color: #fff;
+      text-shadow: 0 2px 0 rgba(0, 0, 0, 0.16), 0 12px 24px rgba(0, 0, 0, 0.35);
+      font-family: "Trebuchet MS", "Franklin Gothic Medium", "Gill Sans", sans-serif;
+    }
+    .fancy-title .fancy-subtitle {
+      margin: 12px 0 0;
+      font-size: clamp(15px, 2vw, 22px);
+      letter-spacing: 0.2px;
+      text-transform: none;
+      color: rgba(233, 243, 255, 0.96);
+      font-weight: 600;
+      line-height: 1.2;
+    }
+    .fancy-title .fancy-line {
+      display: block;
+      margin-top: 4px;
+    }
+    .fancy-title .fancy-line:first-child {
+      margin-top: 0;
+    }
+    .fancy-title .lead-word {
+      display: inline-block;
+      font-size: clamp(24px, 3.3vw, 40px);
+      font-weight: 800;
+      margin-right: 3px;
+      color: #ffffff;
+      text-shadow: 0 5px 14px rgba(0, 0, 0, 0.35);
+    }
+    @keyframes title-glow {
+      0% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+      100% {
+        background-position: 0% 50%;
+      }
+    }
     h2 {
       margin: 0 0 10px;
       font-size: 18px;
@@ -151,7 +206,13 @@
 </head>
 <body>
   <div class="wrap">
-    <h1>Job Monitor</h1>
+    <div class="fancy-title">
+      <h1>Job Monitor</h1>
+      <p class="fancy-subtitle">
+        <span class="fancy-line"><span class="lead-word">Kto</span> sa hanbí, ten má prázdne andy!</span>
+        <span class="fancy-line"><span class="lead-word">Pre</span> iných za dvacku, pre Andyho za facku!</span>
+      </p>
+    </div>
 
     {% with messages = get_flashed_messages() %}
       {% if messages %}
@@ -160,65 +221,6 @@
         {% endfor %}
       {% endif %}
     {% endwith %}
-
-    <div class="grid">
-      <div class="card">
-        <h2>Send Notifications</h2>
-        <p class="small">Send notifications for the currently applied filters.</p>
-        <p class="small">Only jobs matching current filters and not older than selected age will be sent.</p>
-        <form method="post" action="{{ url_for('send_mails') }}">
-          <input type="email" name="recipient_email" value="{{ recipient_email }}" placeholder="name@example.com">
-          <p class="small" style="margin-top:8px;">Max posted age in hours</p>
-          <input type="number" step="1" min="1" name="notification_max_age_hours" value="{{ notification_max_age_hours }}" placeholder="24" style="margin-top:8px;">
-          <p class="small" style="margin-top:10px;">SMTP host</p>
-          <input type="text" name="smtp_host" value="{{ smtp_host }}" placeholder="smtp.gmail.com">
-          <p class="small" style="margin-top:8px;">SMTP port</p>
-          <input type="number" step="1" min="1" name="smtp_port" value="{{ smtp_port }}" placeholder="587">
-          <p class="small" style="margin-top:8px;">SMTP user</p>
-          <input type="text" name="smtp_user" value="{{ smtp_user }}" placeholder="you@gmail.com">
-          <p class="small" style="margin-top:8px;">SMTP app password</p>
-          <input type="password" name="smtp_password" placeholder="Leave blank to keep saved password">
-          <p class="small" style="margin-top:8px;">SMTP from address</p>
-          <input type="email" name="smtp_from" value="{{ smtp_from }}" placeholder="you@gmail.com">
-          <p class="small" style="margin-top:8px;">SMTP timeout (seconds)</p>
-          <input type="number" step="1" min="1" name="smtp_timeout" value="{{ smtp_timeout }}" placeholder="30">
-          <div class="actions" style="margin-top:8px;">
-            <label style="display:flex;gap:8px;align-items:center;font-size:14px;">
-              <input type="checkbox" name="smtp_starttls" value="1" {% if smtp_starttls %}checked{% endif %}>
-              STARTTLS
-            </label>
-            <label style="display:flex;gap:8px;align-items:center;font-size:14px;">
-              <input type="checkbox" name="smtp_ssl" value="1" {% if smtp_ssl %}checked{% endif %}>
-              SSL
-            </label>
-          </div>
-          <p class="small" style="margin-top:8px;">Gmail preset: host smtp.gmail.com, port 587, STARTTLS on, SSL off.</p>
-          <input type="hidden" name="search" value="{{ search }}">
-          <input type="hidden" name="title" value="{{ title }}">
-          <input type="hidden" name="company" value="{{ company }}">
-          <input type="hidden" name="location" value="{{ location }}">
-          <input type="hidden" name="date_posted" value="{{ date_posted }}">
-          <input type="hidden" name="salary_min" value="{{ salary_min }}">
-          <input type="hidden" name="salary_max" value="{{ salary_max }}">
-          <input type="hidden" name="section_education" value="{{ section_education }}">
-          <input type="hidden" name="section_education_field" value="{{ section_education_field }}">
-          <input type="hidden" name="section_languages" value="{{ section_languages }}">
-          <input type="hidden" name="section_other_knowledge" value="{{ section_other_knowledge }}">
-          <input type="hidden" name="section_practice_area" value="{{ section_practice_area }}">
-          <input type="hidden" name="section_years_experience" value="{{ section_years_experience }}">
-          <input type="hidden" name="section_personal_skills" value="{{ section_personal_skills }}">
-          <input type="hidden" name="section_job_tasks" value="{{ section_job_tasks }}">
-          <input type="hidden" name="limit" value="{{ limit }}">
-          {% if remote_only %}
-            <input type="hidden" name="remote_only" value="1">
-          {% endif %}
-          <div class="actions">
-            <button type="submit">Send mails for applied filter</button>
-          </div>
-        </form>
-      </div>
-
-    </div>
 
     <div class="grid">
       <div class="card">
@@ -349,6 +351,62 @@
           {% endfor %}
         </tbody>
       </table>
+    </div>
+
+    <div class="card" style="margin-top: 12px;">
+      <h2>Send Notifications</h2>
+      <p class="small">Send notifications for the currently applied filters.</p>
+      <p class="small">Only jobs matching current filters and not older than selected age will be sent.</p>
+      <form method="post" action="{{ url_for('send_mails') }}">
+        <input type="email" name="recipient_email" value="{{ recipient_email }}" placeholder="name@example.com">
+        <p class="small" style="margin-top:8px;">Max posted age in hours</p>
+        <input type="number" step="1" min="1" name="notification_max_age_hours" value="{{ notification_max_age_hours }}" placeholder="24" style="margin-top:8px;">
+        <p class="small" style="margin-top:10px;">SMTP host</p>
+        <input type="text" name="smtp_host" value="{{ smtp_host }}" placeholder="smtp.gmail.com">
+        <p class="small" style="margin-top:8px;">SMTP port</p>
+        <input type="number" step="1" min="1" name="smtp_port" value="{{ smtp_port }}" placeholder="587">
+        <p class="small" style="margin-top:8px;">SMTP user</p>
+        <input type="text" name="smtp_user" value="{{ smtp_user }}" placeholder="you@gmail.com">
+        <p class="small" style="margin-top:8px;">SMTP app password</p>
+        <input type="password" name="smtp_password" placeholder="Leave blank to keep saved password">
+        <p class="small" style="margin-top:8px;">SMTP from address</p>
+        <input type="email" name="smtp_from" value="{{ smtp_from }}" placeholder="you@gmail.com">
+        <p class="small" style="margin-top:8px;">SMTP timeout (seconds)</p>
+        <input type="number" step="1" min="1" name="smtp_timeout" value="{{ smtp_timeout }}" placeholder="30">
+        <div class="actions" style="margin-top:8px;">
+          <label style="display:flex;gap:8px;align-items:center;font-size:14px;">
+            <input type="checkbox" name="smtp_starttls" value="1" {% if smtp_starttls %}checked{% endif %}>
+            STARTTLS
+          </label>
+          <label style="display:flex;gap:8px;align-items:center;font-size:14px;">
+            <input type="checkbox" name="smtp_ssl" value="1" {% if smtp_ssl %}checked{% endif %}>
+            SSL
+          </label>
+        </div>
+        <p class="small" style="margin-top:8px;">Gmail preset: host smtp.gmail.com, port 587, STARTTLS on, SSL off.</p>
+        <input type="hidden" name="search" value="{{ search }}">
+        <input type="hidden" name="title" value="{{ title }}">
+        <input type="hidden" name="company" value="{{ company }}">
+        <input type="hidden" name="location" value="{{ location }}">
+        <input type="hidden" name="date_posted" value="{{ date_posted }}">
+        <input type="hidden" name="salary_min" value="{{ salary_min }}">
+        <input type="hidden" name="salary_max" value="{{ salary_max }}">
+        <input type="hidden" name="section_education" value="{{ section_education }}">
+        <input type="hidden" name="section_education_field" value="{{ section_education_field }}">
+        <input type="hidden" name="section_languages" value="{{ section_languages }}">
+        <input type="hidden" name="section_other_knowledge" value="{{ section_other_knowledge }}">
+        <input type="hidden" name="section_practice_area" value="{{ section_practice_area }}">
+        <input type="hidden" name="section_years_experience" value="{{ section_years_experience }}">
+        <input type="hidden" name="section_personal_skills" value="{{ section_personal_skills }}">
+        <input type="hidden" name="section_job_tasks" value="{{ section_job_tasks }}">
+        <input type="hidden" name="limit" value="{{ limit }}">
+        {% if remote_only %}
+          <input type="hidden" name="remote_only" value="1">
+        {% endif %}
+        <div class="actions">
+          <button type="submit">Send mails for applied filter</button>
+        </div>
+      </form>
     </div>
   </div>
 </body>
