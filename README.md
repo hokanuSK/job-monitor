@@ -1,4 +1,4 @@
-![Job Monitor screenshot](assets/job-monitor.png)
+![Job Monitor screenshot](assets/job-monitor-2026-03-28-1450.png)
 
 # Job Monitor
 
